@@ -1,17 +1,12 @@
 import { handleMessage, Message, message, State } from "./@model";
 import createEdit$ from "./@edit";
-import createShowFragment$ from "./@show";
+import createShow$ from "./@show";
 
 export default function create$() {
   const it$ = document.createElement("div");
-  let edit$ = document.createTextNode("");
-  let show$ = document.createTextNode("");
-  it$.replaceChildren(edit$, show$);
 
-  // render with initial state
-  const initialState: State = { type: "edit", value: "" };
-  let mostRecentState: State = initialState;
-  let updateEditValue: (value: string) => void;
+  // render methods
+  let renderEditValue$: (value: string) => void;
   const renderEdit$ = (value: string) => {
     const { it$: edit$, updateValue } = createEdit$({
       value,
@@ -19,48 +14,44 @@ export default function create$() {
       handleValueUpdate: (newValue) => dispatch(message.updateValue(newValue)),
     });
     it$.replaceChildren(edit$);
-    updateEditValue = updateValue;
+    renderEditValue$ = updateValue;
   };
+
   const renderShow$ = (value: string) => {
-    const show$ = createShowFragment$({
+    const show$ = createShow$({
       value,
       handleEdit: () => dispatch(message.toEdit()),
     });
     it$.replaceChildren(show$);
   };
-  render(initialState);
+
+  // initial render
+  const initialState: State = { type: "edit", value: "" };
+  renderEdit$(initialState.value);
+
+  // state updates
+  let mostRecentState: State = initialState;
 
   // render with state
   const dispatch = (message: Message) => {
     const newState = handleMessage(message, mostRecentState);
     mostRecentState = newState;
 
-    console.log(message, newState);
     switch (message.type) {
       case "update value": {
-        updateEditValue(message.value);
+        renderEditValue$(message.value);
         break;
       }
-      default: {
-        render(newState);
-        break;
-      }
-    }
-  };
-
-  function render(newState: State) {
-    const editShowToggle$ = it$;
-    switch (newState.type) {
-      case "edit": {
+      case "change to edit state": {
         renderEdit$(newState.value);
         return;
       }
-      case "show": {
+      case "change to show state": {
         renderShow$(newState.value);
         return;
       }
     }
-  }
+  };
 
   return it$;
 }
