@@ -10,6 +10,6 @@ export default function create$(props: {
   edit$.onclick = props.handleEdit;
 
   const it$ = document.createDocumentFragment();
-  it$.replaceChildren(value$, edit$);
+  it$.replaceChildren(edit$, value$);
   return it$;
 }

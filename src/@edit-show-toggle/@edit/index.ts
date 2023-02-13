@@ -22,7 +22,7 @@ export default function create$(props: {
   save$.onclick = props.handleSave;
 
   const it$ = document.createDocumentFragment();
-  it$.replaceChildren(input$, save$);
+  it$.replaceChildren(save$, input$);
 
   return {
     it$,
